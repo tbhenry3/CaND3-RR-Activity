@@ -37,6 +37,7 @@ Statistics Canada. 2020. General Social Survey, Cycle 31, 2017 [Canada]: Family 
 | 'rr1 summary table.do'    | Creates Descriptive Table  |
 | 'rr1 regression.do'       | Runs OLS Regression        |
 | 'rr1 regression table.do' | Creates Regression Table   |
+| 'rr1 results.smcl' | Log File of Results   |
 
 ------------------------------------------------------------------------
 
