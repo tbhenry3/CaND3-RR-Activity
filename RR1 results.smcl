@@ -1,0 +1,300 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}/Users/tara/Documents/RR1 results.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res} 4 Oct 2023, 12:36:49
+
+{com}. use "/Users/tara/Documents/RR1 data.dta"
+
+. do "/Users/tara/Documents/rr1 cleaning.do"
+{txt}
+{com}. drop if marstat !=1 //keep only married participants
+{txt}(11,101 observations deleted)
+
+{com}. 
+. drop if prtypec !=1 //keep only cohabiting hetero partners
+{txt}(215 observations deleted)
+
+{com}. 
+. ***create duplicate variables***
+. gen mealprep = com_105
+{txt}
+{com}. gen housework = com_110
+{txt}
+{com}. gen dishes = com_115
+{txt}
+{com}. gen laundry = com_120
+{txt}
+{com}. gen grocery = com_125
+{txt}
+{com}. gen gardening = com_130
+{txt}
+{com}. gen outdoorwork = com_135
+{txt}
+{com}. gen social = com_140
+{txt}
+{com}. gen finance = com_145
+{txt}
+{com}. 
+. gen female = sex
+{txt}
+{com}. recode female 1=0 2=1 //dummy code 0=male 1=female
+{txt}(9,286 changes made to {bf:female})
+
+{com}. label define genlab 0 "Male" 1 "Female" //add labels (will make table look better)
+{txt}
+{com}. label values female genlab //apply labels
+{txt}
+{com}. 
+. gen visminority = vismin
+{txt}
+{com}. recode visminority 2=0 //dummy code 0=not visible minority 1=visible minority
+{txt}(7,784 changes made to {bf:visminority})
+
+{com}. 
+. gen lifesat = slm_01
+{txt}
+{com}. 
+. ***recode so that "not applicable" "valid skip" "don't know" "refusal" & "not stated" == missing***
+. recode visminority (7=.) (8=.) (9=.)
+{txt}(229 changes made to {bf:visminority})
+
+{com}. recode mealprep (6=.) (7=.) (8=.) (9=.)
+{txt}(42 changes made to {bf:mealprep})
+
+{com}. recode housework (6=.) (7=.) (8=.) (9=.)
+{txt}(42 changes made to {bf:housework})
+
+{com}. recode dishes (6=.) (7=.) (8=.) (9=.)
+{txt}(45 changes made to {bf:dishes})
+
+{com}. recode laundry (6=.) (7=.) (8=.) (9=.)
+{txt}(43 changes made to {bf:laundry})
+
+{com}. recode grocery (6=.) (7=.) (8=.) (9=.)
+{txt}(44 changes made to {bf:grocery})
+
+{com}. recode gardening (5=.) (6=.) (7=.) (8=.) (9=.)
+{txt}(1,543 changes made to {bf:gardening})
+
+{com}. recode outdoorwork (5=.) (6=.) (7=.) (8=.) (9=.)
+{txt}(748 changes made to {bf:outdoorwork})
+
+{com}. recode social (6=.) (7=.) (8=.) (9=.)
+{txt}(56 changes made to {bf:social})
+
+{com}. recode finance (6=.) (7=.) (8=.) (9=.)
+{txt}(49 changes made to {bf:finance})
+
+{com}. recode lifesat (96=.) (97=.) (98=.) (99=.)
+{txt}(115 changes made to {bf:lifesat})
+
+{com}. 
+. ***drop participants missing on key variables by creating a sample***
+. egen sample_miss=rmiss (visminority female lifesat mealprep housework dishes laundry grocery gardening outdoorwork social finance)
+{txt}
+{com}. drop if sample_miss!=0
+{txt}(1,918 observations deleted)
+
+{com}. 
+. ***recode chore variables such that 0=mostly your partner/shared equally/neither and 1=mostly you 
+. recode mealprep 2=0 3=0 4=0
+{txt}(4,577 changes made to {bf:mealprep})
+
+{com}. recode housework 2=0 3=0 4=0
+{txt}(4,880 changes made to {bf:housework})
+
+{com}. recode dishes 2=0 3=0 4=0
+{txt}(5,188 changes made to {bf:dishes})
+
+{com}. recode laundry 2=0 3=0 4=0
+{txt}(4,505 changes made to {bf:laundry})
+
+{com}. recode grocery 2=0 3=0 4=0
+{txt}(5,042 changes made to {bf:grocery})
+
+{com}. recode gardening 2=0 3=0 4=0
+{txt}(4,926 changes made to {bf:gardening})
+
+{com}. recode outdoorwork 2=0 3=0 4=0
+{txt}(4,205 changes made to {bf:outdoorwork})
+
+{com}. recode social 2=0 3=0 4=0
+{txt}(5,250 changes made to {bf:social})
+
+{com}. recode finance 2=0 3=0 4=0
+{txt}(4,594 changes made to {bf:finance})
+
+{com}. 
+. ***create index measure that sums the number of chores mostly done by R***
+. egen chores = rowtotal (mealprep housework dishes laundry grocery gardening outdoorwork social finance)
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "/Users/tara/Documents/rr1 summary table.do"
+{txt}
+{com}. 
+. ***create a summary stats table of chores, lifesat, and visminority by sex. display n mean sd min and max***
+. tabstat chores lifesat visminority, by(female) stat(n, mean, sd, min, max) col(stat) long
+
+{txt}{lalign 6:female} {...}
+{ralign 12:Variable} {...}
+{c |}         N      Mean        SD       Min       Max
+{hline 20}{c +}{hline 50}
+{lalign 6:Male} {...}
+{ralign 12:chores} {...}
+{c |}{...}
+ {res}     3561  2.266217  1.450845         0         9
+{space 6} {...}
+{txt}{ralign 12:lifesat} {...}
+{c |}{...}
+ {res}     3561  8.477956  1.340019         0        10
+{space 6} {...}
+{txt}{ralign 12:visminority} {...}
+{c |}{...}
+ {res}     3561  .1246841  .3304067         0         1
+{txt}{hline 20}{c +}{hline 50}
+{lalign 6:Female} {...}
+{ralign 12:chores} {...}
+{c |}{...}
+ {res}     3807  3.959811  2.031081         0         9
+{space 6} {...}
+{txt}{ralign 12:lifesat} {...}
+{c |}{...}
+ {res}     3807  8.503283  1.374235         0        10
+{space 6} {...}
+{txt}{ralign 12:visminority} {...}
+{c |}{...}
+ {res}     3807  .1218807   .327191         0         1
+{txt}{hline 20}{c +}{hline 50}
+{lalign 6:Total} {...}
+{ralign 12:chores} {...}
+{c |}{...}
+ {res}     7368  3.141287  1.965907         0         9
+{space 6} {...}
+{txt}{ralign 12:lifesat} {...}
+{c |}{...}
+ {res}     7368  8.491042  1.357773         0        10
+{space 6} {...}
+{txt}{ralign 12:visminority} {...}
+{c |}{...}
+ {res}     7368  .1232356  .3287298         0         1
+{txt}{hline 20}{c BT}{hline 50}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "/Users/tara/Documents/rr1 regression.do"
+{txt}
+{com}. 
+. ***regress chores onto lifesat using OLS controlling for sex and visible minority status***
+. regress lifesat c.chores i.female i.visminority 
+
+{txt}      Source {c |}       SS           df       MS      Number of obs   ={res}     7,368
+{txt}{hline 13}{c +}{hline 34}   F(3, 7364)      = {res}    17.38
+{txt}       Model {c |} {res} 95.4632221         3   31.821074   {txt}Prob > F        ={res}    0.0000
+{txt}    Residual {c |} {res} 13485.9456     7,364  1.83133427   {txt}R-squared       ={res}    0.0070
+{txt}{hline 13}{c +}{hline 34}   Adj R-squared   ={res}    0.0066
+{txt}       Total {c |} {res} 13581.4088     7,367  1.84354673   {txt}Root MSE        =   {res} 1.3533
+
+{txt}{hline 14}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}      lifesat{col 15}{c |} Coefficient{col 27}  Std. err.{col 39}      t{col 47}   P>|t|{col 55}     [95% con{col 68}f. interval]
+{hline 14}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 7}chores {c |}{col 15}{res}{space 2}-.0429415{col 27}{space 2} .0088979{col 38}{space 1}   -4.83{col 47}{space 3}0.000{col 55}{space 4}-.0603838{col 68}{space 3}-.0254991
+{txt}{space 13} {c |}
+{space 7}female {c |}
+{space 6}Female  {c |}{col 15}{res}{space 2} .0973053{col 27}{space 2} .0349601{col 38}{space 1}    2.78{col 47}{space 3}0.005{col 55}{space 4} .0287735{col 68}{space 3} .1658372
+{txt}1.visminority {c |}{col 15}{res}{space 2}-.2667777{col 27}{space 2} .0480283{col 38}{space 1}   -5.55{col 47}{space 3}0.000{col 55}{space 4}-.3609269{col 68}{space 3}-.1726285
+{txt}{space 8}_cons {c |}{col 15}{res}{space 2} 8.608533{col 27}{space 2} .0311346{col 38}{space 1}  276.49{col 47}{space 3}0.000{col 55}{space 4} 8.547501{col 68}{space 3} 8.669566
+{txt}{hline 14}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}{txt}
+{com}. estimates store est1 //store estimates
+{txt}
+{com}. 
+. ***regress chores onto lifesat by sex using OLS controlling for visible minority status***
+. regress lifesat c.chores i.visminority if female==1
+
+{txt}      Source {c |}       SS           df       MS      Number of obs   ={res}     3,807
+{txt}{hline 13}{c +}{hline 34}   F(2, 3804)      = {res}    15.55
+{txt}       Model {c |} {res}  58.274182         2   29.137091   {txt}Prob > F        ={res}    0.0000
+{txt}    Residual {c |} {res} 7129.43478     3,804  1.87419421   {txt}R-squared       ={res}    0.0081
+{txt}{hline 13}{c +}{hline 34}   Adj R-squared   ={res}    0.0076
+{txt}       Total {c |} {res} 7187.70896     3,806  1.88852048   {txt}Root MSE        =   {res}  1.369
+
+{txt}{hline 14}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}      lifesat{col 15}{c |} Coefficient{col 27}  Std. err.{col 39}      t{col 47}   P>|t|{col 55}     [95% con{col 68}f. interval]
+{hline 14}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 7}chores {c |}{col 15}{res}{space 2}-.0475682{col 27}{space 2} .0110183{col 38}{space 1}   -4.32{col 47}{space 3}0.000{col 55}{space 4}-.0691705{col 68}{space 3}-.0259659
+{txt}1.visminority {c |}{col 15}{res}{space 2}-.2775698{col 27}{space 2} .0683974{col 38}{space 1}   -4.06{col 47}{space 3}0.000{col 55}{space 4}-.4116689{col 68}{space 3}-.1434706
+{txt}{space 8}_cons {c |}{col 15}{res}{space 2} 8.725475{col 27}{space 2}  .050592{col 38}{space 1}  172.47{col 47}{space 3}0.000{col 55}{space 4} 8.626285{col 68}{space 3} 8.824665
+{txt}{hline 14}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}{txt}
+{com}. estimates store est2 //store estimates
+{txt}
+{com}. regress lifesat c.chores i.visminority if female==0
+
+{txt}      Source {c |}       SS           df       MS      Number of obs   ={res}     3,561
+{txt}{hline 13}{c +}{hline 34}   F(2, 3558)      = {res}    10.36
+{txt}       Model {c |} {res} 37.0066133         2  18.5033066   {txt}Prob > F        ={res}    0.0000
+{txt}    Residual {c |} {res}  6355.5129     3,558  1.78625995   {txt}R-squared       ={res}    0.0058
+{txt}{hline 13}{c +}{hline 34}   Adj R-squared   ={res}    0.0052
+{txt}       Total {c |} {res} 6392.51952     3,560  1.79565155   {txt}Root MSE        =   {res} 1.3365
+
+{txt}{hline 14}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}      lifesat{col 15}{c |} Coefficient{col 27}  Std. err.{col 39}      t{col 47}   P>|t|{col 55}     [95% con{col 68}f. interval]
+{hline 14}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 7}chores {c |}{col 15}{res}{space 2}-.0337875{col 27}{space 2} .0154673{col 38}{space 1}   -2.18{col 47}{space 3}0.029{col 55}{space 4}-.0641133{col 68}{space 3}-.0034618
+{txt}1.visminority {c |}{col 15}{res}{space 2}-.2617818{col 27}{space 2} .0679185{col 38}{space 1}   -3.85{col 47}{space 3}0.000{col 55}{space 4}-.3949449{col 68}{space 3}-.1286188
+{txt}{space 8}_cons {c |}{col 15}{res}{space 2} 8.587165{col 27}{space 2} .0420266{col 38}{space 1}  204.33{col 47}{space 3}0.000{col 55}{space 4} 8.504767{col 68}{space 3} 8.669564
+{txt}{hline 14}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}{txt}
+{com}. estimates store est3 //store estimates
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "/Users/tara/Documents/rr1 regression table.do"
+{txt}
+{com}. ***create a table using stored estimates from 3 regression models. add stars for pvalues on SEs***
+. esttab est1 est2 est3, se star(* 0.10 ** 0.05 *** 0.01) label 
+{res}
+{txt}{hline 68}
+{txt}                              (1)             (2)             (3)   
+{txt}                          lifesat         lifesat         lifesat   
+{txt}{hline 68}
+{txt}chores              {res}      -0.0429***      -0.0476***      -0.0338** {txt}
+                    {res} {ralign 12:{txt:(}0.00890{txt:)}}    {ralign 12:{txt:(}0.0110{txt:)}}    {ralign 12:{txt:(}0.0155{txt:)}}   {txt}
+
+{txt}Male                {res}            0                                   {txt}
+                    {res} {ralign 12:{txt:(}.{txt:)}}                                   {txt}
+
+{txt}Female              {res}       0.0973***                                {txt}
+                    {res} {ralign 12:{txt:(}0.0350{txt:)}}                                   {txt}
+
+{txt}visminority=0       {res}            0               0               0   {txt}
+                    {res} {ralign 12:{txt:(}.{txt:)}}    {ralign 12:{txt:(}.{txt:)}}    {ralign 12:{txt:(}.{txt:)}}   {txt}
+
+{txt}visminority=1       {res}       -0.267***       -0.278***       -0.262***{txt}
+                    {res} {ralign 12:{txt:(}0.0480{txt:)}}    {ralign 12:{txt:(}0.0684{txt:)}}    {ralign 12:{txt:(}0.0679{txt:)}}   {txt}
+
+{txt}Constant            {res}        8.609***        8.725***        8.587***{txt}
+                    {res} {ralign 12:{txt:(}0.0311{txt:)}}    {ralign 12:{txt:(}0.0506{txt:)}}    {ralign 12:{txt:(}0.0420{txt:)}}   {txt}
+{txt}{hline 68}
+{txt}Observations        {res}         7368            3807            3561   {txt}
+{txt}{hline 68}
+{txt}Standard errors in parentheses
+{txt}* p<0.10, ** p<0.05, *** p<0.01
+
+{com}. 
+{txt}end of do-file
+
+{com}. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}/Users/tara/Documents/RR1 results.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res} 4 Oct 2023, 12:37:53
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}
